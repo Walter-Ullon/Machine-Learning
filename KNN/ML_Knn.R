@@ -1,3 +1,5 @@
+# classification of cancer data using KNN Machine learnign algorithms
+
 #import dataset
 wbcd <- read.csv(url("https://raw.githubusercontent.com/dataspelunking/MLwR/master/Machine%20Learning%20with%20R%20(2nd%20Ed.)/Chapter%2003/wisc_bc_data.csv"))
 #dataset info
