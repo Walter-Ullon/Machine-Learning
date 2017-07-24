@@ -58,8 +58,10 @@ CrossTable(credit_test$default, credit_pred, prop.chisq = FALSE, prop.r = FALSE,
 credit_boost10 <- C5.0(credit_train[-17], credit_train$default, trials = 10)
 credit_boost10
 
-# Obtain new model's summary and peformance on the test data.
+# Obtain new model's summary and peformance on the test data. Save to .txt file.
+sink("credit_boost10.txt")
 summary(credit_boost10)
+sink()
 
 # Test new model on test data
 # Compare predicition against true results.
