@@ -37,7 +37,7 @@ prop.table(table(credit_test$default))
 # Train model.
 # Exclude "default" class from training data (17th column) but supply it as target factor vector for classification (labels).
 credit_model <- C5.0(credit_train[-17], credit_train$default)
-credit_model # inspect...
+# credit_model # inspect...
 
 # Inspect Tree's decisions and acquire stats on model performance on the training data.
 summary(credit_model)
