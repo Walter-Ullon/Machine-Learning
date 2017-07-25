@@ -41,7 +41,9 @@ shrooms_test <- shrooms_test[-17]
 # Exclude "class" class (edible, posonous) from training data (1st column) but supply it as target factor vector for classification (labels).
 shrooms_model <- C5.0(shrooms_train[ ,-1], shrooms_train$class)
 summary(shrooms_model)
+pdf("shroomsTree.pdf", width=16,height=7)
 plot(shrooms_model)
+dev.off()
 
 # Apply model to test data and predict...
 # Compare prediction against true results.
