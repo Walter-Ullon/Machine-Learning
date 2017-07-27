@@ -8,9 +8,56 @@ titanic_test <- read.csv(url("https://storage.googleapis.com/kaggle-competitions
 str(titanic_test)
 table(titanic_train$Sex)
 
+
+# -------- Prepare data for cleaning. CLEAN it -------------
+# Add Column to each data set. Column of TRUE if train set, FALSE is test set.
+titanic_train$isTrainSet <- TRUE
+titanic_test$isTrainSet <- FALSE
+
+# check to make sure all "TrainSet" data points returnTRUE
+tail(titanic_train$isTrainSet)
+
+# Add "Survived" column to "test" dataset in order to match it with "train" set.
+titanic_test$Survived <- NA
+names(titanic_test)
+
+# Bind both datasets into singe one (for cleaning purposes)
+titanic_full <- rbind(titanic_train, titanic_test)
+
+# Query "embarked" column to find any missing values. Replace missing values with the node.
+table(titanic_full$Embarked) # Node = "S"
+titanic_full[titanic_full$Embarked == "", "Embarked"] <- "S"
+
+# Query Age column to see of there are any missing values. Replace with median.
+table(is.na(titanic_full$Age))
+
+age_median <- median(titanic_full$Age, na.rm = TRUE) # calculate median (remove missing values from calc.)
+titanic_full[is.na(titanic_full$Age), "Age"] <- age_median
+
+# Query "Fare" column to see of there are any missing values. Replace with median.
+table(is.na(titanic_full$Fare))
+fare_median <- median(titanic_full$Fare, na.rm = TRUE) # calculate median (remove missing values from calc.)
+titanic_full[is.na(titanic_full$Fare), "Fare"] <- fare_median
+
+# Categorical casting
+titanic_full$Pclass <- factor(titanic_full$Pclass, levels=c(3,2,1),ordered=TRUE)
+titanic_full$Pclass <- as.factor(titanic_full$Pclass)
+titanic_full$Sex <- as.factor(titanic_full$Sex)
+titanic_full$Embarked <- as.factor(titanic_full$Embarked)
+
+# Re-split data into train and test set
+titanic_train <- titanic_full[titanic_full$isTrainSet==TRUE,]
+titanic_test <- titanic_full[titanic_full$isTrainSet==FALSE,]
+
+# Cast "Survived" column in training set as categorical.
+titanic_train$Survived <- as.factor(titanic_train$Survived)
+
+# ---------------------------------------------------------
+
+
 # Remove unnecessary & unique variables
-titanic_train <- titanic_train[c(-1, -4, -9, -10, -11, -12)]
-titanic_test <- titanic_test[c(-1, -3, -8, -9, -10, -11)]
+titanic_train <- titanic_train[c(-1, -4, -9, -10, -11, -12, -13)]
+titanic_test <- titanic_test[c(-1, -2, -4, -9, -10, -11, -12, -13)]
 
 # Train model
 titanic_model <- C5.0(titanic_train[-1], as.factor(titanic_train$Survived))
@@ -27,6 +74,7 @@ prop.table(table(titanic_test$Sex))
 prop.table(table(titanic_pred))
 
 # Save as .CSV and prep data for submission to Kaggle.
+titanic_pred <- as.data.frame(titanic_pred)
 write.csv(titanic_pred, file = "titanicPrediction.csv")
 
           
