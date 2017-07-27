@@ -28,16 +28,63 @@ titanic_full <- rbind(titanic_train, titanic_test)
 table(titanic_full$Embarked) # Node = "S"
 titanic_full[titanic_full$Embarked == "", "Embarked"] <- "S"
 
-# Query Age column to see of there are any missing values. Replace with median.
+# Query Age column to see of there are any missing values.
 table(is.na(titanic_full$Age))
+boxplot(titanic_full$Age)
+boxplot.stats(titanic_full$Age)
 
-age_median <- median(titanic_full$Age, na.rm = TRUE) # calculate median (remove missing values from calc.)
-titanic_full[is.na(titanic_full$Age), "Age"] <- age_median
+# Obtain max age from stats and use it to filter outliers.
+maxAge <- boxplot.stats(titanic_full$Age)$stats[5]
+age_filter <- titanic_full$Age < maxAge # creates rule
+titanic_full[age_filter,] # applies rule to data
+
+# Use regression to predict unknown "age" values.
+age_eqn = "Age ~ Pclass + Sex + SibSp + Parch + Embarked" # i.e. predict age given Pclass, Sex,...
+age_model <- lm(
+  formula = age_eqn,
+  data = titanic_full[age_filter,] # supply linear regression method with clean 'age' data (no outliers).
+)
+
+# Predict values
+age_row <- titanic_full[is.na(titanic_full$Age), c("Pclass", "Sex", "Embarked", "SibSp", "Parch")]
+# above: only query rows that have missing values in "age". Only want to see "Pclass", "Sex", ... Save.
+age_predictions <- predict(age_model, newdata = age_row) # predict using "age_model", on age_row.
+
+# Replace missing values with predicted values.
+titanic_full[is.na(titanic_full$Age), "Age"] <- age_predictions
+
+#age_median <- median(titanic_full$Age, na.rm = TRUE) # calculate median (remove missing values from calc.)
+#titanic_full[is.na(titanic_full$Age), "Age"] <- age_median
+
 
 # Query "Fare" column to see of there are any missing values. Replace with median.
 table(is.na(titanic_full$Fare))
-fare_median <- median(titanic_full$Fare, na.rm = TRUE) # calculate median (remove missing values from calc.)
-titanic_full[is.na(titanic_full$Fare), "Fare"] <- fare_median
+boxplot(titanic_full$Fare)
+boxplot.stats(titanic_full$Fare) # returns median 1st Q, 3rd Q, etc.
+
+# Obtain max fare from stats and use it to filter outliers.
+maxFare <- boxplot.stats(titanic_full$Fare)$stats[5]
+fare_filter <- titanic_full$Fare < maxFare # creates rule
+titanic_full[fare_filter,] # applies rule to data
+
+# Use regression to predict unknown "fare" values.
+fare_eqn = "Fare ~ Pclass + Sex + SibSp + Parch + Embarked" # i.e. predict fare given Pclass, Sex,...
+fare_model <- lm(
+  formula = fare_eqn,
+  data = titanic_full[fare_filter,] # supply linear regression method with clean fare data (no outliers).
+)
+
+# Predict values
+fare_row <- titanic_full[is.na(titanic_full$Fare), c("Pclass", "Sex", "Embarked", "SibSp", "Parch")]
+# above: only query rows that have missing values in "fare". Only want to see "Pclass", "Sex", ... Save.
+fare_predictions <- predict(fare_model, newdata = fare_row) # predict using "fare_model", on fare_row.
+
+# Replace missing values with predicted values.
+titanic_full[is.na(titanic_full$Fare), "Fare"] <- fare_predictions
+
+
+#fare_median <- median(titanic_full$Fare, na.rm = TRUE) # calculate median (remove missing values from calc.)
+#titanic_full[is.na(titanic_full$Fare), "Fare"] <- fare_median
 
 # Categorical casting
 titanic_full$Pclass <- factor(titanic_full$Pclass, levels=c(3,2,1),ordered=TRUE)
