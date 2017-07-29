@@ -48,10 +48,6 @@ insurance$bmi30 <- ifelse(insurance$bmi >= 30, 1, 0)
 # We assume the effects of obesity and smoking coumpound to a bigger problem than their separate contributions.
 # We pass it to the model as such: expenses ~ bmi30*smoker.
 
-
-
-
-
-
-
-
+# Create improved model by adding newly created indicators. Summarize findings.
+ins_model2 <- lm(expenses ~ age + age2 + children + bmi + sex + bmi30*smoker + region, data = insurance)
+summary(ins_model2)
