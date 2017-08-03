@@ -8,6 +8,8 @@ install.packages("SnowballC")
 install.packages("wordcloud")
 install.packages("e1071")
 install.packages("gmodels")
+install.packages("caret")
+install.packages("ROCR")
 # load packages
 library(tm)
 library(NLP)
@@ -15,6 +17,8 @@ library(SnowballC)
 library(wordcloud)
 library(e1071)
 library(gmodels)
+library(caret)
+library(ROCR)
 
 # import data
 sms_raw <- read.csv(url("https://raw.githubusercontent.com/dataspelunking/MLwR/master/Machine%20Learning%20with%20R%20(2nd%20Ed.)/Chapter%2004/sms_spam.csv"), stringsAsFactors = FALSE)
@@ -103,8 +107,17 @@ write.csv(sms_test, file = "sms_test.csv")
 # Build SMS Classifier Model
 sms_classifier <- naiveBayes(sms_train, sms_train_labels)
 
-# Make predicitons using the classifier model on the test data store them in a vector
+# Make predicitons using the classifier model on the test data store them in a vector.
+# Run the prediction a second time and obtain the "confidence" in terms of probabilities.
 sms_test_pred <- predict(sms_classifier, sms_test)
+sms_test_prob <- predict(sms_classifier, sms_test, type = "raw")
+head(sms_test_prob)
+
+#------------ Present findings in a data table. ----------------
+sms_results <- data.frame(sms_test_labels, sms_test_pred, sms_test_prob)
+col_headings <- c('Actual type','Predicted type', 'Prob. Ham','Prob. Spam')
+names(sms_results) <- col_headings
+
 
 # Compare predicitons
 CrossTable(sms_test_pred, sms_test_labels, prop.chisq = FALSE, prop.t = FALSE, dnn = c("predicted", "actual"))
@@ -112,6 +125,29 @@ CrossTable(sms_test_pred, sms_test_labels, prop.chisq = FALSE, prop.t = FALSE, d
 # Improve the model by setting a Laplace Estimator of 1
 sms_classifier2 <- naiveBayes(sms_train, sms_train_labels, laplace = 1)
 sms_test_pred2 <- predict(sms_classifier2, sms_test)
+sms_test_prob2 <- predict(sms_classifier2, sms_test, type = "raw")
 CrossTable(sms_test_pred2, sms_test_labels, prop.chisq = FALSE, prop.t = FALSE, dnn = c("predicted", "actual"))
+
+#------------ Present findings in a data table. V2 ----------------
+sms_results2 <- data.frame(sms_test_labels, sms_test_pred2, sms_test_prob2)
+col_headings2 <- c('Actual type','Predicted type', 'Prob. Ham','Prob. Spam')
+names(sms_results2) <- col_headings2
+
+#------------- Analyze model performance with 'Caret' ------------------
+confusionMatrix(sms_test_pred2, sms_test_labels, positive = "spam")
+
+#------------- Visualize model performance ------------------
+# prediction needs two vectors: estimated spam probs. and actual class labels.
+pred <- prediction(predictions = sms_test_prob2[ ,2], labels = sms_test_labels)
+perf <- performance(pred, measure = "tpr", x.measure = "fpr")
+pdf("SMS_ROCcurve.pdf")
+plot(perf, main = "ROC curve for SMS spam filter", col = "blue", lwd = 3)
+dev.off()
+
+# Calculate area under the ROC Curve.
+perf.auc <- performance(pred, measure = "auc")
+unlist(perf.auc@y.values)
+
+
 
 

@@ -44,7 +44,9 @@ summary(credit_model)
 
 # Apply model to test data and predict...
 # Compare prediction against true results.
+# Obtain prediction "confidence" (in terms of probabilities).
 credit_pred <- predict(credit_model, credit_test)
+predicted_prob <- predict(credit_model, credit_test, type = "prob")
 CrossTable(credit_test$default, credit_pred, prop.chisq = FALSE, prop.r = FALSE, dnn = c("actual default", "predicted default" ))
 
 #-------------------------------------------------------------------------------------------
@@ -66,6 +68,7 @@ sink()
 # Test new model on test data
 # Compare predicition against true results.
 credit_boost10_pred <- predict(credit_boost10, credit_test)
+predicted_prob_boost10 <- predict(credit_model, credit_test, type = "prob")
 CrossTable(credit_test$default, credit_boost10_pred, prop.chisq = FALSE, prop.r = FALSE, dnn = c("actual default", "predicted default" ))
 
 
