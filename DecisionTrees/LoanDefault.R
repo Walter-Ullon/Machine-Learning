@@ -2,8 +2,11 @@
 
 # Install and load packages
 install.packages("C50")
+install.packages("irr")
 library(C50)
 library(gmodels)
+library(caret)
+library(irr)
 
 # Import data from UCI Machine Learning Repository (http://archive.ics.uci.edu/ml)
 # Inspect data
@@ -101,3 +104,23 @@ CrossTable(credit_test$default, credit_cost_pred, prop.chisq = FALSE, prop.r = F
 # NOTE: compared to the previous models, the version above produces more mistakes (37% vs. 18%).
 #       However, the types of mistkes are very different (less false negatives -- 79% vs. 42% & 61%). 
 #-------------------------------------------------------------------------------------------
+
+
+#------------ K-Folds Cross Validation ------------
+set.seed(123)
+folds <- createFolds(credit$default, k = 10)
+str(folds)
+ cv_results <- lapply(folds, function(x) {
+   credit_train <- credit[-x, ]
+   credit_test <- credit[x, ]
+   credit_model <- C5.0(default ~ ., data = credit_train)
+   credit_pred <- predict(credit_model, credit_test)
+   credit_actual <- credit_test$default
+   kappa <- kappa2(data.frame(credit_actual, credit_pred))$value
+   return(kappa)
+ })
+
+str(cv_results)
+mean(unlist(cv_results))
+
+

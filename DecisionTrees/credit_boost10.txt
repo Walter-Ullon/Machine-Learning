@@ -3,7 +3,7 @@ Call:
 C5.0.default(x = credit_train[-17], y = credit_train$default, trials = 10)
 
 
-C5.0 [Release 2.07 GPL Edition]  	Sun Jul 23 19:43:41 2017
+C5.0 [Release 2.07 GPL Edition]  	Fri Aug  4 06:43:16 2017
 -------------------------------
 
 Class specified by attribute `outcome'
