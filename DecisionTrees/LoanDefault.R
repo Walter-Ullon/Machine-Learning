@@ -100,15 +100,17 @@ credit_cost <- C5.0(credit_train[-17], credit_train$default, costs = error_cost)
 credit_cost_pred <- predict(credit_cost, credit_test)
 CrossTable(credit_test$default, credit_cost_pred, prop.chisq = FALSE, prop.r = FALSE, dnn = c("actual default", "predicted default" ))
 
-#-------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
 # NOTE: compared to the previous models, the version above produces more mistakes (37% vs. 18%).
 #       However, the types of mistkes are very different (less false negatives -- 79% vs. 42% & 61%). 
-#-------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
 
 
 #------------ K-Folds Cross Validation ------------
+# K-folds: creates "K" training and testing partitions randomly. The split is 90-10.
+# Kappa statistic: adjusts the accuracy our model based on how likely our predictor is to get the right answer by chance.
 set.seed(123)
-folds <- createFolds(credit$default, k = 10)
+folds <- createFolds(credit$default, k = 10) # create 10 folds
 str(folds)
  cv_results <- lapply(folds, function(x) {
    credit_train <- credit[-x, ]

@@ -1,8 +1,13 @@
 # Survival on the Titanic
 
-# Load Data
-titanic_train <- read.csv(url("https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/train.csv?GoogleAccessId=competitions-data@kaggle-161607.iam.gserviceaccount.com&Expires=1501202527&Signature=kH%2B5q%2F3a9R9v4LVII%2FBnOYCfO0In8FiJMD7RNYEHtWWnY1HGYnR7KOJx0UWVwDaVpWx2Hw6Ds8%2FPSKzO3V8DjkjDByuBmNQunOCPWfwh2RH79cNBHGQDhHhoR6ttdV8gDPJq5EGwWvHT%2BTZbGGwKEDLrIChKpnV90ScbT9DwXELp1a%2BhciCPV4RKasuTIo37%2FvFuJY4MFCWbPj%2B9eFUfHxyfF3FEKEJ%2FN7gYznyb%2BMkUnr3d3Kuh%2BXFtGO3zwNXDx0LZI5FUtxkqeym1xKAtAUSDsIv1OW%2FIoL4pH9zHoysSU0JLltZOtXBY74zouw1xm23lfcA25AJULGQ47aitRg%3D%3D"), stringsAsFactors = FALSE)
-titanic_test <- read.csv(url("https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/test.csv?GoogleAccessId=competitions-data@kaggle-161607.iam.gserviceaccount.com&Expires=1501202573&Signature=hNq96PKu5916QwmTLsKox0afkVwsdRGWrsRlloxH5zwgXdJ2BCREDCOqX%2FsYraKszG7LkC%2FF1MFT%2FMJ1Ccb7vFmk6jlPCL9ic2L4S7PIBOBP29OsEhh8Wu0%2BXRbCjAwBvAzJVBEzSCDcIhemPLLTUXbh6hfXLOeKfFVbTwM6oqrUxGVQta6iJpnJmD96o2aOqsfdTtNNG8Hmxqhp15EDwWC7VcHOFxaZvwBrprWrbvxF82ILfDsjqPl5AnYzZhOCYu%2FF2VueKceTQ5eXTatKEM9%2B0D6K8XCIkswsehSJv8IrhYa%2BcoTiA%2FKsbcrnSLu7jdORwpHJBS6XaLDh3f8m5w%3D%3D"), stringsAsFactors = FALSE)
+# Load Data (links expire - must sign into kaggle and copy new links)
+titanic_train <- read.csv(url("https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/train.csv?GoogleAccessId=competitions-data@kaggle-161607.iam.gserviceaccount.com&Expires=1503149409&Signature=n7NVB%2Be2TMDsY9E9aygUxvAjyT6tTeP4nXfbZicZ8BDfXajpqi7937layk7%2Fi%2Bg%2Bq6dyDr%2BRbLuIN%2BtcK%2Br%2FrGHibYtrLHwfcfJAKoApD0HJCjbaJpaIs2AUEKU%2FL4qExeYVLcjFDHWkic1PBz62AfhRyT9RdTQ4VuyRkyvbDRhMWHMApvMUtam9F9fdvDrQwjvBzS7MFEYTBqT6%2BcKxcWtGMNO6t%2BrbwzzMyMNMPcdcbk0C%2BKEj7unRreO%2BQjSIyzLhxc47csT%2FuqfGz8qoxTyBfF3lpDuhfJUqVT1B56aUQZSViWTTSAGDu5KUEokkSuY0K8gCYa9e0abiThxjsg%3D%3D"), stringsAsFactors = FALSE)
+#write.csv(titanic_train, file = "titanic_train.csv")
+titanic_test <- read.csv(url("https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/test.csv?GoogleAccessId=competitions-data@kaggle-161607.iam.gserviceaccount.com&Expires=1503149443&Signature=RCoWifzKTM5X7enJq9b0QccLq2ls8SlHRSYks7PgBXQ3Lrw3myskMGU3IsyhUbc6JnBxP%2FcDH5X6ohKOEujDMIpXxA5Pea5Kr6hSD%2FOvxEsbaKNIzTtVX3lWH0cBW0LpxtqqB%2FqA%2FcBJnwz39gOREhKFMXFD3vRVSlaPlmp6Ct4EEoGTUV1K7idWd7XEAUiNan9lIpHvqmQwOisKwRRBy4h69t9ef334mC47cUHDfz8RpfIK6htzpP0FKjynHa9ZE%2FT92hGGOWU0M6RfAJQvWNq02Vvh3KhUpPzmmAI5qk4%2B7dbr0qFY5ZIzzCTu6LWJga1zuDp1RgHzt3Cbz2sIMA%3D%3D"), stringsAsFactors = FALSE)
+#write.csv(titanic_test, file = "titanic_test.csv")
+
+#titanic_train <- read.csv("titanic_train.csv")
+#titanic_test <- read.csv("titanic_test.csv")
 
 # Inspect data
 str(titanic_test)
@@ -109,9 +114,6 @@ titanic_test <- titanic_test[c(-1, -2, -4, -9, -10, -11, -12, -13)]
 # Train model
 titanic_model <- C5.0(titanic_train[-1], as.factor(titanic_train$Survived))
 summary(titanic_model)
-pdf("titanicSurvivalTree.pdf", width=16,height=7)
-plot(titanic_model)
-dev.off()
 
 # Make prediction
 titanic_pred <- predict(titanic_model, titanic_test)
@@ -124,4 +126,20 @@ prop.table(table(titanic_pred))
 titanic_pred <- as.data.frame(titanic_pred)
 write.csv(titanic_pred, file = "titanicPrediction.csv")
 
-          
+#--------------------------------------------------------------------
+# Implement "boosting" algorithms to improve model. (See: AdaBoost).
+#--------------------------------------------------------------------
+# below: learn to predict "Survived" based on all of the categories found in data = titanic_train"
+AdaB_model <- boosting(Survived ~ ., data = titanic_train, boos = TRUE)
+predict_AdaB <- predict(AdaB_model, titanic_test)
+str(predict_AdaB)
+
+# Prep to save as CSV
+colHeadings <- c("PassengerId", "Survived")
+AdaB_predDataframe <- data.frame(c(892:1309), c(predict_AdaB$class))
+names(AdaB_predDataframe) <- colHeadings
+write.csv(AdaB_predDataframe, file = "AdaB_TitanicPred.csv", row.names = FALSE)
+
+
+
+
