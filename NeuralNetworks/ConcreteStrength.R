@@ -38,7 +38,9 @@ cor(predicted_strength, concrete_test$strength)
 # We will add 5 "hidden" nodes.
 concrete_model2 <- neuralnet(strength ~ cement + slag + ash + water + superplastic + coarseagg + fineagg + age, data = concrete_train, hidden = 5)
 # Visualize model.
+pdf("concreteNN2.pdf",width=6,height=4,paper='special')
 plot(concrete_model2)
+dev.off()
 
 # Evaluate model performance. Apply model to test data.
 model_results2 <- compute(concrete_model2, concrete_test[1:8]) # eliminate "strength" from test data.
