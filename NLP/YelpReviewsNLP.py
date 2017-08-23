@@ -3,7 +3,9 @@
 """
 
 # NLP algorithm applied to sentiment analysis in YELP reviews.
-# Data from Kaggle.
+# Data is a subset of full data from Kaggle, .csv supplied in the folder.
+# Runs for about 5 mins if "analyzer=..." is selected in CountVectorizer().
+# Working on improvements...
 
 #----------------- Import packages: ---------------------
 import pandas as pd
@@ -13,6 +15,7 @@ import string
 import nltk # Imports the library
 # nltk.download() #Download the necessary datasets
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 
 #----------------- Load data and inspect: ---------------------
@@ -62,21 +65,26 @@ plt.show()
 #----------------- Prepare data for classification: ---------------------
 
 # Define text-processing function:
+
 def text_process(mess):
     """
     Takes in a string of text, then performs the following:
     1. Remove all punctuation
     2. Remove all stopwords
-    3. Returns a list of the cleaned text
+    3. Stem all words.
+    4. Returns a list of the cleaned text
     """
-    # Check characters to see if they are in punctuation
+    # Stems the words in the message (i.e. run, running, runs -> run, run, run)
+    stemmer = SnowballStemmer("english")
+    
+    # Check characters to see if they contain punctuation.
     nopunc = [char for char in mess if char not in string.punctuation]
 
     # Join the characters again to form the string.
     nopunc = ''.join(nopunc)
     
-    # Now just remove any stopwords
-    return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
+    # Remove any stopwords. 'Tokenize'.
+    return [stemmer.stem(word) for word in nopunc.split() if word.lower() not in stopwords.words('english')]
 
 
 
@@ -89,10 +97,12 @@ y = yelp_class['stars']
 
 # Import CountVectorizer() and apply to text.
 from sklearn.feature_extraction.text import CountVectorizer
-cv = CountVectorizer()
+cv = CountVectorizer(analyzer=text_process)
+#cv = CountVectorizer(analyzer=text_process) #applies text_process function w/ vectorizer.
 print('11*------------------------')
 print(X.head(10))
 X = cv.fit_transform(X)
+
 print()
 print('Shape of document term Matrix:')
 print(X.shape)
@@ -103,7 +113,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 
 #----------------- Train Model: ---------------------
-# We will use a NaiveBayes classifier
+# We will use a NaiveBayes classifier.
 from sklearn.naive_bayes import MultinomialNB
 nb = MultinomialNB()
 
@@ -125,15 +135,15 @@ print(classification_report(y_test, predictions))
 
 
 
-
 '''
 Next, we seek to improve results by applying text processing to our data.
 We will employ TF-IDF, 'bag-of-words', etc...
 We will switch to a RandonForest() classifier as the NB did poorly on the pipeline.
+The algorithm used for classification in the pipeline is ripe for experimentation.
 '''
 
-'''
-#----------------- Apply Text Precessing Using a 'Pipeline' ---------------------
+
+#----------------- Apply Text Processing Using a 'Pipeline' ---------------------
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import  TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
@@ -141,9 +151,9 @@ from sklearn.ensemble import RandomForestClassifier
 # Build the Pipeline
 # Feed 'text_process' into pipeline.
 pipeline = Pipeline([
-    ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts
-    ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
-    ('classifier', RandomForestClassifier(n_estimators=300)),  # train on TF-IDF vectors w/ Naive Bayes classifier
+    ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts.
+    ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores.
+    ('classifier', RandomForestClassifier(n_estimators=130)),  # train on TF-IDF vectors w/ RF classfr.
 ])
 
 # Re-do the data split:
@@ -163,26 +173,6 @@ print('13*------------------------')
 print(confusion_matrix(y_test, predictions))
 print()
 print(classification_report(y_test, predictions))
-
-
-
-
-
-'''
-
-
-#businesses = pd.read_json('yelp_training_set/yelp_training_set_business.json',lines=True)
-#users = pd.read_json('yelp_training_set/yelp_training_set_user.json',lines=True)
-#checkIn = pd.read_json('yelp_training_set/yelp_training_set_checkin.json',lines=True)
-#reviews = pd.read_json('yelp_training_set/yelp_training_set_review.json',lines=True)
-
-
-
-
-
-
-
-
 
 
 

@@ -3,7 +3,10 @@
 """
 
 # NLP algorithm applied to sentiment analysis in YELP reviews.
-# Data from Kaggle.
+# Data from Kaggle. Will Need to download the .json files in order to run.
+# NOTE: Second part of the code (pipeline) will run for about 1520 mins...Large dataset.
+# For a faster run of the code, see 'YelpReviewsNLP.py' (subset of data, .csv in the folder)
+# Working on improvements...
 
 #----------------- Import packages: ---------------------
 import pandas as pd
@@ -11,13 +14,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import string
 import nltk # Imports the library
-# nltk.download() #Download the necessary datasets
+# nltk.download() #Download the necessary datasets. Will need to run in order to dl all necessary packages (i.e. stopwords)
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 
 #----------------- Load data and inspect: ---------------------
 yelp = pd.read_json('yelp_training_set/yelp_training_set_review.json',lines=True) #...reviews.json
-yelp_test = pd.read_json('yelp_test_set/yelp_test_set_review.json',lines=True) # from the test set.
 
 #businesses = pd.read_json('yelp_training_set/yelp_training_set_business.json',lines=True)
 #users = pd.read_json('yelp_training_set/yelp_training_set_user.json',lines=True)
@@ -35,6 +38,7 @@ print(yelp.describe())
 
 
 #----------------- Create new column. Visualize data: ---------------------
+# New columns contains the word length of each review.
 yelp['text length'] = yelp['text'].apply(len)
 print('4*------------------------')
 print(yelp.head())
@@ -76,32 +80,40 @@ def text_process(mess):
     Takes in a string of text, then performs the following:
     1. Remove all punctuation
     2. Remove all stopwords
-    3. Returns a list of the cleaned text
+    3. Stem all words.
+    4. Returns a list of the cleaned text
     """
-    # Check characters to see if they are in punctuation
+    # Stems the words in the message (i.e. run, running, runs -> run, run, run)
+    stemmer = SnowballStemmer("english")
+    
+    
+    # Check characters to see if they contain punctuation.
     nopunc = [char for char in mess if char not in string.punctuation]
 
     # Join the characters again to form the string.
     nopunc = ''.join(nopunc)
     
-    # Now just remove any stopwords
-    return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
+    # Remove any stopwords. Tokenize.
+    return [stemmer.stem(word) for word in nopunc.split() if word.lower() not in stopwords.words('english')]
 
 
 
 # Create new dataframe consisting of only those reviews that received 1 or 5 stars.
+# In essence, only predict 1 or 5 stars (for now)
 yelp_class = yelp[(yelp['stars']==1) | (yelp['stars']==5)]
 
 
 # Create two objects: the 'text' review, and the labels ('stars').
-X = yelp_class['text']
-y = yelp_class['stars']
+X = yelp_class['text']  # feature
+y = yelp_class['stars'] # labels
 
 
 # Import CountVectorizer() and apply to text.
+# Count vectorizer returns vectors with word count.
 from sklearn.feature_extraction.text import CountVectorizer
-cv = CountVectorizer()
-#cv = CountVectorizer(analyzer=text_process)
+cv = CountVectorizer('''analyzer=text_process''')
+#cv = CountVectorizer(analyzer=text_process) #applies text_process function w/ vectorizer.
+
 print('11*------------------------')
 print(X.head(10))
 X = cv.fit_transform(X)
@@ -115,7 +127,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 
 #----------------- Train Model: ---------------------
-# We will use a NaiveBayes classifier
+# We will use a NaiveBayes classifier.
 from sklearn.naive_bayes import MultinomialNB
 nb = MultinomialNB()
 
@@ -141,10 +153,11 @@ print(classification_report(y_test, predictions))
 Next, we seek to improve results by applying text processing to our data.
 We will employ TF-IDF, 'bag-of-words', etc...
 We will switch to a RandonForest() classifier as the NB did poorly on the pipeline.
+The algorith used for classification in the pipeline is ripe for experimentation.
 '''
 
 
-#----------------- Apply Text Precessing Using a 'Pipeline' ---------------------
+#----------------- Apply Text Processing Using a 'Pipeline' ---------------------
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import  TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
@@ -152,9 +165,9 @@ from sklearn.ensemble import RandomForestClassifier
 # Build the Pipeline
 # Feed 'text_process' into pipeline.
 pipeline = Pipeline([
-    ('bow', CountVectorizer()),  # strings to token integer counts
+    ('bow', CountVectorizer('''analyzer=text_process''')),  # strings to token integer counts
     ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
-    ('classifier', RandomForestClassifier(n_estimators=300)),  # train on TF-IDF vectors w/ Naive Bayes classifier
+    ('classifier', RandomForestClassifier(n_estimators=310)),  # train on TF-IDF vectors w/ Naive Bayes classifier
 ])
 
 # Re-do the data split:
