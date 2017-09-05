@@ -222,8 +222,14 @@ test.drop(['Sex', 'Embarked', 'Name', 'Ticket', 'Pclass', 'PassengerId', 'Prefix
 
 
 #------------------ Train Model --------------------
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler() 
+
 X_train = train.drop('Survived', axis=1)
 y_train = train['Survived']
+
+#X_train = scaler.fit_transform(X_train)
+#y_train = scaler.fit_transform(y_train)
 
 
 from sklearn.linear_model import LogisticRegression

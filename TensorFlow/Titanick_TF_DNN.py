@@ -237,10 +237,10 @@ clf.fit(X_train, y_train, steps=2000)
 # Predict:
 predictions = clf.predict(test)
 
-passId = np.arange(892,1310)
-predictions = pd.DataFrame(predictions, columns=['Survived'] )
 
 # prepare dataframe to save as CSV for submission.
+predictions = pd.DataFrame(predictions, columns=['Survived'] )
+passId = np.arange(892,1310)
 predictionsCSV = pd.DataFrame(passId, columns=['PassengerId'] )
 predictionsCSV['Survived'] = predictions
 

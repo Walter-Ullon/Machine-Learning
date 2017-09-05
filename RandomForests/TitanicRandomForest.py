@@ -117,7 +117,7 @@ plt.show()
 
 # Get mean age per passenger class and print it to the screen.
 AvgAgePclass_df = round(train.groupby('Pclass')['Age'].mean())
-print('The mean age for passengers in each class is: ' + str(AvgAgePclass_df))
+print('The mean age for passengers in each class is: ', AvgAgePclass_df)
 
 # Define function imputation function for age:
 def impute_age(cols):
@@ -138,7 +138,7 @@ def impute_age(cols):
         
 # Define imputation function for fare:
 AvgFarePclass_df = round(train.groupby('Pclass')['Fare'].mean()) # get mean fare given Pclass
-print('The mean fare for passengers in each class is: ' + str(AvgFarePclass_df))
+print('The mean fare for passengers in each class is: ', AvgFarePclass_df)
 
 def impute_fare(cols):
     fare = cols[0]
@@ -229,7 +229,7 @@ y_train = train['Survived']
 
 
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(n_estimators=10)
+clf = RandomForestClassifier(n_estimators=100)
 clf.fit(X_train, y_train)
 # Predict:
 predictions = clf.predict(test)
