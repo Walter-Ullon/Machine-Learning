@@ -4,8 +4,16 @@ Created on Mon Sep  4 08:08:07 2017
 """
 
 '''
-Geographical segmentation ANN model applied to customer churn probelm. 
+Geographical segmentation ANN model applied to customer churn problem. 
 '''
+
+#===============================================================
+#                       TIME CODE:
+#===============================================================
+import time
+start_time = time.time()
+
+
 #=================================================================
 #                      IMPORT PACKAGES:
 #=================================================================
@@ -90,7 +98,7 @@ X_test = np.array(X_test)
 #=================================================================
 # Import Keras and modules:
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 
 #****************************
 #      Set classifier:  
@@ -111,6 +119,13 @@ TIP: use the average of the # of ind. variables and the # of dependent variables
                                              We need to tell the network what inputs to expect.
 '''
 classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu', input_dim=11))
+#classifier.add(Dropout(rate = 0.1))
+
+''' 
+We will apply 'dropout' to this layer (this helps to avoiding overfitting). By setting rate = 0.1, 
+we are indicating that we want ten percent of the neurons disabled. We are in essence making
+neurons less dependent on each other.
+'''
 
 #*************************************
 #     Add 2nd hidden layer:  
@@ -120,6 +135,7 @@ input_dim = 11           ---> no need for this on 2nd hidden layer as it will ta
                               as input the output of the 1st hidden layer. 
 '''
 classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu'))
+#classifier.add(Dropout(rate = 0.1))
 
 #*************************************
 #        Add output layer:  
@@ -171,7 +187,8 @@ predictions = (predictions_raw > 0.5)
 #=================================================================
 #                 PREDICT A SINGLE OBSERVATION:
 #=================================================================
-"""Predict if the customer with the following informations will leave the bank:
+"""
+Predict if the customer with the following informations will leave the bank:
 Geography: France
 Credit Score: 600
 Gender: Male
@@ -181,7 +198,8 @@ Balance: 60000
 Number of Products: 2
 Has Credit Card: Yes
 Is Active Member: Yes
-Estimated Salary: 50000"""
+Estimated Salary: 50000
+"""
 new_prediction = classifier.predict(scaler.fit_transform(np.array([[600, 40, 3, 60000, 2, 1, 1, 50000, 1, 1, 0]])))
 new_prediction = (new_prediction > 0.5)
 
@@ -197,6 +215,7 @@ print(classification_report(y_test, predictions))
 
 
 CM = confusion_matrix(y_test, predictions)
+
 
 # Get class names by calling unique values in 'priorityLevel' column.
 class_names = list(churn['Exited'].unique())
@@ -237,12 +256,87 @@ def plot_confusion_matrix(cm, classes,
     plt.xlabel('Predicted label')
 
 
+
 # Print:
 plt.figure()
 sns.set_style("whitegrid", {'axes.grid' : False})
 plot_confusion_matrix(CM, classes=class_names, normalize=False,
                       title='Confusion matrix')
 plt.show()
+
+
+#=================================================================
+#                  K-FOLD CROSS VALIDATION:
+#=================================================================
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import cross_val_score
+from keras.models import Sequential
+from keras.layers import Dense
+
+# Define ANN classifier building function:
+def build_classifier():
+    classifier = Sequential()
+    classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu', input_dim=11))
+    classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=1, kernel_initializer='uniform', activation='sigmoid'))
+    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return classifier
+
+classifier = KerasClassifier(build_fn = build_classifier, batch_size=10, epochs=10)
+accuracies = cross_val_score(estimator = classifier, X=X_train, y=y_train, cv = 10)
+#accuracies = cross_val_score(estimator = classifier, X=X_train, y=y_train, cv = 10, n_jobs=-1)
+mean_acc = accuracies.mean()
+variance_acc = accuracies.std()
+
+#=================================================================
+#                      GRID SEARCH TUNING: 
+#=================================================================
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import GridSearchCV
+from keras.models import Sequential
+from keras.layers import Dense
+
+# Define ANN classifier building function:
+def build_classifier(optimizer):
+    classifier = Sequential()
+    classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu', input_dim=11))
+    classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=1, kernel_initializer='uniform', activation='sigmoid'))
+    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return classifier
+
+classifier = KerasClassifier(build_fn = build_classifier)
+
+
+# Define parameters to tune:
+parameters = {'batch_size': [25, 32],
+              'epochs': [10, 50], 
+              'optimizer': ['adam', 'rmsprop']} 
+
+# Create GridSearch instance:
+grid_search = GridSearchCV(estimator = classifier,
+                           param_grid = parameters,
+                           scoring = 'accuracy',
+                           cv = 10)
+
+# Fit to training set:
+grid_search = grid_search.fit(X_train, y_train)
+
+# Return best parameters:
+best_parameters = grid_search.best_params_
+best_accuracy = grid_search.best_score_
+
+
+
+# PRINT RUN-TIME:
+print("--- %s seconds ---" % (time.time() - start_time))
+
+
+
+
+
+
+
 
 
 
