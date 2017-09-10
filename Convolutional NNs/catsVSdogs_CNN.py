@@ -159,10 +159,10 @@ print("--- %s seconds ---" % (time.time() - start_time))
 #                        SAVE MODEL:
 #=================================================================
 from keras.models import load_model
-
 classifier.save('catsVSdogs_CNN.h5')
 
 del classifier
+
 my_model = load_model('catsVSdogs_CNN.h5')
 
 
