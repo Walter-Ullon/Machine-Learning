@@ -16,6 +16,7 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
+from keras.models import load_model
 
 
 #*************************************
@@ -132,7 +133,7 @@ def run_training(bs, epochs):
                          epochs = epochs,
                          validation_data = test_set,
                          validation_steps = 2000/bs)
-
+    model.save('catsVSdogs_CNN.h5')
 
 
 
@@ -154,9 +155,10 @@ print("--- %s seconds ---" % (time.time() - start_time))
 #=================================================================
 #                        SAVE MODEL:
 #=================================================================
+'''
 from keras.models import load_model
 model.save('catsVSdogs_CNN.h5')
-
+'''
 
 
 #=================================================================
