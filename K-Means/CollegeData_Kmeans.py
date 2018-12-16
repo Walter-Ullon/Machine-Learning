@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-
+import Tkinter as tk
 
 #----------------- Load data and explore: ----------------------
 college = pd.read_csv('College_Data', index_col = 0)

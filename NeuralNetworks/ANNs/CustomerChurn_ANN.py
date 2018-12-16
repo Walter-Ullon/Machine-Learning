@@ -188,7 +188,7 @@ predictions = (predictions_raw > 0.5)
 #                 PREDICT A SINGLE OBSERVATION:
 #=================================================================
 """
-Predict if the customer with the following informations will leave the bank:
+Predict if the customer with the following information will leave the bank:
 Geography: France
 Credit Score: 600
 Gender: Male
