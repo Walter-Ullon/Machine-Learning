@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # ======================================================================================================================
-#                                       CROSS-ENTROPY METHOD  --- PROCEDURE
+#                                               CROSS-ENTROPY METHOD
 # ======================================================================================================================
 #               The core of the cross-entropy method is to throw away bad episodes and train on better ones.
+#                                          --- LIMITATIONS ---
+# For training, our episodes have to be finite and, preferably, short
+# • The total reward for the episodes should have enough variability to separate good episodes from bad ones
+# • There is no intermediate indication about whether the agent has succeeded or failed
+#                                           --- PROCEDURE ---
 # 1. Play (NUM_EPISODES) number of episodes using current model and environment.
 # 2. Calculate the total reward for every episode and decide on a reward boundary. Usually, some percentile of all
 #    rewards such as 50th of 70th.
